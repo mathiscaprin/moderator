@@ -49,9 +49,6 @@ def check_filetype(filename):
         filetype = "vidéo"
     else:
         filetype = None
-
-    # Enregistre le type de fichier détecté.
-    print(f"[INFO] : Le fichier {file_basename} est de type : {filetype}")
     
     return filetype
 
@@ -514,7 +511,6 @@ def process_media(media_file, rekognition, transcribe, comprehend, bucket_name):
             objects = detect_objects(media_file, rekognition)
             emotions = summarize_emotions(detect_emotions(media_file, rekognition))
             celebrities = detect_celebrities(media_file, rekognition)
-            print(" ".join(objects + celebrities) + " " + emotions["emotion_dominante"])
             keyphrases = extract_keyphrases(" ".join(objects + celebrities) + emotions["emotion_dominante"], comprehend)
             return {"hashtags" : keyphrases, "moderated" : True}
         else:
@@ -541,24 +537,3 @@ def process_media(media_file, rekognition, transcribe, comprehend, bucket_name):
             return {"hashtags" : keywords, "moderated" : False}
     else:
         return {"hashtags" : [], "moderated" : False}
-
-
-def main():
-    print("ok")
-    TEST_VIDEO_FILE = "../assets/tuto_jeux-video.mp4"
-    TEST_IMAGE_FILE = "./assets/selfie_with_johnny-depp.png"
-    BUCKET_NAME = 'mcaprintp03'
-    aws_session = get_aws_session()
-    rekognition = aws_session.client('rekognition')
-    transcribe = aws_session.client('transcribe')
-    comprehend = aws_session.client('comprehend')
-    s3 = aws_session.client('s3')
-
-    print(extract_keyphrases("Animal Canine Dog Husky Mammal Pet Person Sitting Adult Male HAPPY", comprehend))
-    s3.create_bucket(Bucket=BUCKET_NAME)
-
-    s3.upload_file(TEST_VIDEO_FILE, BUCKET_NAME, os.path.basename(TEST_VIDEO_FILE))
-    test = process_media(TEST_VIDEO_FILE, rekognition, transcribe, comprehend, BUCKET_NAME)
-    print(test)
-    test = process_media(TEST_IMAGE_FILE, rekognition, transcribe, comprehend, BUCKET_NAME)
-    print(test)
